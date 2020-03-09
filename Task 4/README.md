@@ -27,7 +27,7 @@ $ strings classes3.dex | grep -q -i terrortime && echo found
 
 After running these commands, we see that only `classes2.dex` has relevant code so we will import that into Ghidra and let it run its initial analysis. Once analysis is complete, we will take a look at the exports and classes to get a feel of what methods exist. What initially sticks out is that code is written in a standard Java paradigm with getters and setters as access control. With this, we will easily be able to see how variables are stored and retrieved.
 
-To learn more about the `checkpin` column, we will look at `setCheckPin`. We see that the bytes are stored in an object of type `BlobAppField`, which is not a native type to Java or any library. Since this value is being compared when we login and it is a custom type, there must be an overriden `equals` method for this type. There are several `equal` functions but we will choose the one from the `BlobAppField` class. We can now use `Show References to` in order to see where this function is called. The two results are the Client `equals` and `generateSymmetricKey`.
+To learn more about the `checkpin` column, we will look at `setCheckPin`. We see that the bytes are stored in an object of type `BlobAppField`, which is not a native type to Java or any library. Since this value is being compared when we login and it is a custom type, there must be an overridden `equals` method for this type. There are several `equal` functions but we will choose the one from the `BlobAppField` class. We can now use `Show References to` in order to see where this function is called. The two results are the Client `equals` and `generateSymmetricKey`.
 
 Looking at `generateSymmetricKey`, we see that an `encryptPin` is being "checked" against the `checkPin`. Using the decompiled Java, we can see how these values are calculated.
 
@@ -74,7 +74,7 @@ $ adb push clientDB.db /data/data/com.badguy.terrortime/databases/
 [100%] /data/data/com.badguy.terrortime/databases/clientDB.db
 ```
 
-Now if we log in again, we can succesfully see Natalie's messages! She has been talking to two other individuals, Alice and Gittel. To determine the relevant information, we have to examine important parts of the conversations about time.
+Now if we log in again, we can successfully see Natalie's messages! She has been talking to two other individuals, Alice and Gittel. To determine the relevant information, we have to examine important parts of the conversations about time.
 
 ```
 Natalie: the spirits will be picked up at 1416

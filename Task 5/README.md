@@ -15,7 +15,7 @@ For this task, we need to find a vulnerability that will allow us to masquerade 
 
 To begin, we will decompile the provided Python bytecode back into Python using an [online tool](https://python-decompiler.com). The code appears to be a testing script that verifies OAuth2 access tokens using the `/introspect` endpoint. While this endpoint does not exist on the real server, we have a better idea of how the OAuth works.
 
-In Ghidra, if we look at the `requestAccessToken` function, we see that it is performing similar actions as the Python script but it is getting a new token using an incomplete version of the [authorization code flow](https://auth0.com/docs/flows/concepts/auth-code). To use this flow, an application needs to send the server an encoded version of a client ID and client secret. If we want to masquerade as Gittel using this, we would need her client secret. However, without her cached credentials, this is impossible. We will have to figure out a vulnerablity in the authorization logic using only Natalie's cached credentials.
+In Ghidra, if we look at the `requestAccessToken` function, we see that it is performing similar actions as the Python script but it is getting a new token using an incomplete version of the [authorization code flow](https://auth0.com/docs/flows/concepts/auth-code). To use this flow, an application needs to send the server an encoded version of a client ID and client secret. If we want to masquerade as Gittel using this, we would need her client secret. However, without her cached credentials, this is impossible. We will have to figure out a vulnerability in the authorization logic using only Natalie's cached credentials.
 
 Let's look at how the application logs a user in once they have a token. To do this, we look at what calls `getOAuth2AccessToken`. The relevant caller is `doInBackground` belonging to `XMPPLoginTask`. Now we can see how the application logs in to the chat server.
 
@@ -33,7 +33,7 @@ ref_07 = new String(pbVar4);
 ref_02.setUsernameAndPassword(ppSVar2[0],ref_07);
 ```
 
-The application uses the new access token as the password but does not use the client ID as the username. Rather, it uses the first part of the XMPP username. Thie explains why Natalie's client ID is in two places in the database. Since we are able to manipulate the database, we can change the XMPP username to Gittel's username and masquerade as her.
+The application uses the new access token as the password but does not use the client ID as the username. Rather, it uses the first part of the XMPP username. This explains why Natalie's client ID is in two places in the database. Since we are able to manipulate the database, we can change the XMPP username to Gittel's username and masquerade as her.
 
 ```
 $ adb shell
@@ -50,30 +50,30 @@ We see she is talking to Alice and Natalie, who she is in charge of, but also An
 
 ```
 Anjali
-	Isabelle
-	Gittel
-	Greyson
-	Hannah
-	Elijah
+- Isabelle
+- Gittel
+- Greyson
+- Hannah
+- Elijah
 
 Gittel
-    Alice
-    Natalie
-    Anjali
-    Isabelle
-    Hannah
+- Alice
+- Natalie
+- Anjali
+- Isabelle
+- Hannah
 
 Isabelle
-	Gittel
-	Anjali
-	Hannah
-	Preston
-	Keily
+- Gittel
+- Anjali
+- Hannah
+- Preston
+- Keily
 
 Hannah
-	Isabelle
-	Gittel
-	Anjali
+- Isabelle
+- Gittel
+- Anjali
 ```
 
 We can see that Hannah is the top-level organizational leader because she exclusively talks to the other three while they talk to each other and their subordinates as well. While we cannot see Hannah's chat history, her messages must still be coming to the device so we are able to intercept them.

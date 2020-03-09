@@ -43,7 +43,7 @@ OPTIONS:
     -o, --pubout <PUBOUT>      Output the generated public key to a file
 ```
 
-From this, we are still not sure what `alg1` refers to but `0x800` is the keysize. If we run `keygen` with no arguments, it outputs a 2048 bit key pair. One interesting thing to notice is that the time it takes to complete has significant variability which indicates some random noise happening during the generation. Since all `keygen` does is produce key pairs, it is clear that there is some vulnerability related to those keys, particulary the public key since that is all we have access to for all users.
+From this, we are still not sure what `alg1` refers to but `0x800` is the keysize. If we run `keygen` with no arguments, it outputs a 2048 bit key pair. One interesting thing to notice is that the time it takes to complete has significant variability which indicates some random noise happening during the generation. Since all `keygen` does is produce key pairs, it is clear that there is some vulnerability related to those keys, particularly the public key since that is all we have access to for all users.
 
 This is all the information we can find without reverse engineering, let's now put `keygen` into Ghidra to analyze it. If we look at the main function, we see that a lot of functions have lost their names:
 
@@ -94,7 +94,7 @@ public_key_to_pem
 private_key_to_pem
 ```
 
-Looking at the pseudocode, we immeadietly notice how this algorithm deviates from the standard key generation algorithm. Instead of generating two primes and computing modulus, etc., it generates one prime and it must create the other prime based off of it. If we can decode how this process happens, we can write a simple program to reverse this process to get one of the primes. Since we have the public key already we can get the private key if we know one of the primes. First off, let's look at the functions that are not clear.
+Looking at the pseudocode, we immediately notice how this algorithm deviates from the standard key generation algorithm. Instead of generating two primes and computing modulus, etc., it generates one prime and it must create the other prime based off of it. If we can decode how this process happens, we can write a simple program to reverse this process to get one of the primes. Since we have the public key already we can get the private key if we know one of the primes. First off, let's look at the functions that are not clear.
 
 The initial call to `public_key_from_pem` indicates that there is another public key embedded in the program because at this point, we have not even generated primes to use. If we use strings, we can find this key.
 
@@ -120,7 +120,7 @@ LQSaJ+FV6hRrL0S2eQIDAQAB
 
 There are actually 3 keys in the program! We see that these keys are 256, 512, and 1024 bit respectively. Since `keygen` has three different sizes of keys to generate, we can assume that generating a key of size `n` uses an existing public key of size `n/2`.
 
-Now that we know what public key is being used, we need to figure out what r keys are. We can see that when `get_r_keys` is called, it is passed the public key from before. This indicates that certain r keys are associated with certain public keys. In this function, `base64decode` is called twice and it returns these 2 decodings concatenated together. When we found the public keys in the output of `strings` there were also several base64 encoded strings immeadietly following:
+Now that we know what public key is being used, we need to figure out what r keys are. We can see that when `get_r_keys` is called, it is passed the public key from before. This indicates that certain r keys are associated with certain public keys. In this function, `base64decode` is called twice and it returns these 2 decodings concatenated together. When we found the public keys in the output of `strings` there were also several base64 encoded strings immediately following:
 
 ```
 pTo199138gu60LE4sX/pjMnQ5l3LIQ1acv7229NLz3M=
@@ -229,4 +229,4 @@ Hannah: will that fund future projects?
 Anjali: It will at least fund the assassination we've begun planning
 ```
 
-That's all for the Codebreaker Challenge! We have succesfully cracked the encryption for TerrorTime as well as discovered and thwarted the terrorists' plans!
+That's all for the Codebreaker Challenge! We have successfully cracked the encryption for TerrorTime as well as discovered and thwarted the terrorists' plans!

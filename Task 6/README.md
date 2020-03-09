@@ -1,6 +1,6 @@
 # Task 6a - Message Spoofing - (Vulnerability Analysis; Cryptanalysis)
 
-*The ability to masquerade as a TerrorTime user is helpful, even when we are not able to access the plaintext version of their messages. We want to be able to send "spoofed" messages (i.e., messages appearing to be from the user we are masquerading as) to other TerrorTime users as a way of disrupting their attack plans. Critically, any conversation we have as the masqueraded user should never be visible to that user the next time they access their account. But complicating matters is the fact that all messages sent and received through TerrorTime are archived on the chat server and downloaded each time a user logs in to their account. For this task, identify a vulnerabilty that will allow you to send/receive messages as a TerrorTime user without that user ever seeing those messages the next time they access their account. To prove your solution, submit the encrypted message body of a spoofed message that was sent from the organization leader to a cell leader. Submit the full client id of the cell leader you chose. Put the organization leader's account in a state such that replies to your spoofed message will never be seen by them, but still readable by you.*
+*The ability to masquerade as a TerrorTime user is helpful, even when we are not able to access the plaintext version of their messages. We want to be able to send "spoofed" messages (i.e., messages appearing to be from the user we are masquerading as) to other TerrorTime users as a way of disrupting their attack plans. Critically, any conversation we have as the masqueraded user should never be visible to that user the next time they access their account. But complicating matters is the fact that all messages sent and received through TerrorTime are archived on the chat server and downloaded each time a user logs in to their account. For this task, identify a vulnerability that will allow you to send/receive messages as a TerrorTime user without that user ever seeing those messages the next time they access their account. To prove your solution, submit the encrypted message body of a spoofed message that was sent from the organization leader to a cell leader. Submit the full client id of the cell leader you chose. Put the organization leader's account in a state such that replies to your spoofed message will never be seen by them, but still readable by you.*
 
 ## Solution
 
@@ -20,7 +20,7 @@ while (bVar1 = ref_00.hasNext(), bVar1 != false) {
 }
 ```
 
-There are two of these while loops for two different iterators. The while loop is going through each object as a public key and using it to create a fingerprint and a corresponding wrapped key, used to decrypt a message. If we look at `p1` and `p2` in the caller, these iterators are the sender's public keys and the recipeient's public keys. With this, we know that only the sender and receiver can decrypt the key that's needed to decypt the actual message. If we are able to manipulate public keys of a sender or receiever, we can choose who is able to read any given message. To figure out how keys are stored, we look at `getPublicKeys`.
+There are two of these while loops for two different iterators. The while loop is going through each object as a public key and using it to create a fingerprint and a corresponding wrapped key, used to decrypt a message. If we look at `p1` and `p2` in the caller, these iterators are the sender's public keys and the recipient's public keys. With this, we know that only the sender and receiver can decrypt the key that's needed to decrypt the actual message. If we are able to manipulate public keys of a sender or receiver, we can choose who is able to read any given message. To figure out how keys are stored, we look at `getPublicKeys`.
 
 ```java
 ref_00 = ref.getXMPPTCPConnection();
@@ -91,7 +91,7 @@ access_token = response.json()["access_token"]
 print(access_token)
 ```
 
-Using Hannah's client ID and a generated access token, we can login using Spark. When we are logged in, we can look closely at the packets sent and receieved. During this, we see the client requesting Hannah's vCard:
+Using Hannah's client ID and a generated access token, we can login using Spark. When we are logged in, we can look closely at the packets sent and received. During this, we see the client requesting Hannah's vCard:
 
 ```
 <iq to="hannah--vhost-32@terrortime.app/Spark" from="hannah--vhost-32@terrortime.app" id="6tcuX-23" type="result">
@@ -110,7 +110,7 @@ AgMBAAE=
 </iq>
 ```
 
-Since vCards are a standard, we can find [documentation](https://xmpp.org/extensions/xep-0054.html#sect-idm46144959876880) to change a vCard. For conveinence, we will change Hannah's public key to match Natalie's public key. To update, we send the following packet:
+Since vCards are a standard, we can find [documentation](https://xmpp.org/extensions/xep-0054.html#sect-idm46144959876880) to change a vCard. For convenience, we will change Hannah's public key to match Natalie's public key. To update, we send the following packet:
 
 ```
 <iq id="v2" type="set">
@@ -139,7 +139,7 @@ Now, until Hannah logs in again, she will not be able to see any new message sen
 
 For this task, we need to find a vulnerability that will allow us to decrypt any future message sent/received using TerrorTime.
 
-This task takes advantage of the same vulnerability as task 6a - we are able to manipulate the vCard for any user. Instead of removing public keys from a vCard, we are adding a new public key that we control to everyone's vCard. This works since the vCards support mulitple public keys. First we will generate a new key pair:
+This task takes advantage of the same vulnerability as task 6a - we are able to manipulate the vCard for any user. Instead of removing public keys from a vCard, we are adding a new public key that we control to everyone's vCard. This works since the vCards support multiple public keys. First we will generate a new key pair:
 
 ```
 $ openssl genrsa -des3 -out private.pem 2048
