@@ -45,17 +45,9 @@ OPTIONS:
 
 From this, we are still not sure what `alg1` refers to but `0x800` is the keysize. If we run `keygen` with no arguments, it outputs a 2048 bit key pair. One interesting thing to notice is that the time it takes to complete has significant variability which indicates some random noise happening during the generation. Since all `keygen` does is produce key pairs, it is clear that there is some vulnerability related to those keys, particularly the public key since that is all we have access to for all users.
 
-This is all the information we can find without reverse engineering, let's now put `keygen` into Ghidra to analyze it. If we look at the main function, we see that a lot of functions have lost their names:
+This is all the information we can find without reverse engineering, let's now put `keygen` into Ghidra to analyze it. 
 
-```
-hf352330e5765cc35(local_458,&local_918,0x1bd107,1);
-hcc557fe57e61670a(&local_918,local_458,0x1bd02c,7);
-h09d64e0158179fe9(local_458,&local_918,0x1bd08f,4);
-h85f66caad92f2152(&local_918,local_458,1);
-h4b287696c8056b09(local_458,&local_918,0x1bd093,4);
-```
-
-Luckily, at the top of each function, Ghidra has a comment with the function's namespace which includes its name. As we go through functions of interest, we will rename all of these.
+Since Ghidra does not have support for demangling Rust function names, many functions have strange names like `hf352330e5765cc35`. If we run the [`rust_demangler.py`](rust_demangler.py) script in Ghidra, all the names will be properly demangled.
 
 Looking through the `keygen::main` function, we see that it is parsing arguments and matches what we saw in the help dialog. We also see references to `.rs` files indicating that this program was created using Rust. If we look at the call graph, we see that it is calling `terrortime::keygen::generate_rsa_key` which sounds like it would do the bulk of the processing. In here, we see that there are calls related to the algorithm argument we saw earlier: `gen_key-alg1` and `gen_key-alg2`.
 
